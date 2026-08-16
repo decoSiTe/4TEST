@@ -462,7 +462,7 @@
       margin: 24px 0;
     }
 
-    /* Email verification — refreshed button-style design; flow remains unchanged */
+    /* Email verification — compact choices + modal authentication */
     .email-auth-box {
       border: 1px solid rgba(255,255,255,0.78);
       border-radius: 30px;
@@ -474,8 +474,7 @@
       display: flex;
       align-items: center;
       gap: 10px;
-      padding: 2px 0 12px;
-      border-bottom: 1px dashed rgba(124,58,237,0.18);
+      padding: 2px 0 4px;
     }
     .email-choice {
       min-height: 44px;
@@ -530,14 +529,7 @@
     }
     .email-radio-dot,
     .email-choice small { display: none; }
-    .email-auth-panel {
-      display: none;
-      margin-top: 8px;
-      padding-top: 14px;
-      border-top: 1px dashed rgba(124,58,237,0.22);
-      animation: fadeUp 0.22s ease both;
-    }
-    .email-auth-panel.active { display: block; }
+    .email-auth-panel { display: none; }
     .google-auth-row { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; }
     .verified-pill {
       display: none;
@@ -554,6 +546,99 @@
     }
     .verified-pill.show { display: inline-flex; }
     .email-status { min-height: 20px; margin-top: 10px; font-size: 12px; font-weight: 800; }
+
+    /* Email sign-in modal */
+    .email-modal {
+      position: fixed;
+      inset: 0;
+      z-index: 10000;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 22px;
+      background: rgba(38, 27, 64, 0.38);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+    }
+    .email-modal.show { display: flex; animation: fadeIn 0.18s ease both; }
+    .email-modal-card {
+      width: min(430px, 100%);
+      border: 1px solid rgba(255,255,255,0.86);
+      border-radius: 28px;
+      background: rgba(255,255,255,0.96);
+      box-shadow: 0 24px 70px rgba(64,45,98,0.28), inset 0 1px 0 rgba(255,255,255,0.9);
+      padding: 26px;
+      position: relative;
+      animation: fadeUp 0.22s ease both;
+    }
+    .email-modal-close {
+      position: absolute;
+      top: 14px;
+      right: 14px;
+      width: 34px;
+      height: 34px;
+      border: 0;
+      border-radius: 50%;
+      background: rgba(124,58,237,0.08);
+      color: #5f5870;
+      cursor: pointer;
+      font-size: 20px;
+      line-height: 1;
+    }
+    .email-modal-close:hover { background: rgba(124,58,237,0.14); }
+    .email-modal-icon {
+      width: 54px;
+      height: 54px;
+      border-radius: 17px;
+      display: grid;
+      place-items: center;
+      margin-bottom: 14px;
+      background: linear-gradient(135deg, rgba(139,92,246,0.16), rgba(236,72,153,0.14));
+    }
+    .email-modal-icon img { width: 34px; height: 34px; object-fit: contain; }
+    .email-modal-icon.google-icon { font: 900 30px Arial, sans-serif; color: #4285F4; }
+    .email-modal-title { margin: 0; font-size: 22px; font-weight: 900; color: #302b3a; }
+    .email-modal-subtitle { margin: 7px 0 20px; color: #777080; font-size: 13px; line-height: 1.55; font-weight: 600; }
+    .email-modal-body { min-height: 58px; }
+    .email-modal .g_id_signin { display: inline-block; }
+    .email-modal .flexway-modal-input {
+      width: 100%;
+      min-height: 54px;
+      border: 1px solid rgba(125,95,170,0.16);
+      border-radius: 16px;
+      background: #f8f6fb;
+      padding: 14px 16px;
+      font: 700 14px 'DM Sans', system-ui, sans-serif;
+      color: #383341;
+      outline: none;
+    }
+    .email-modal .flexway-modal-input:focus {
+      background: #fff;
+      border-color: rgba(124,58,237,0.38);
+      box-shadow: 0 0 0 4px rgba(124,58,237,0.08);
+    }
+    .flexway-verify-btn {
+      width: 100%;
+      min-height: 50px;
+      margin-top: 12px;
+      border: 0;
+      border-radius: 15px;
+      cursor: pointer;
+      background: linear-gradient(135deg, #8b5cf6, #c026d3);
+      color: #fff;
+      font: 800 14px 'DM Sans', system-ui, sans-serif;
+      box-shadow: 0 10px 24px rgba(124,58,237,0.22);
+    }
+    .flexway-verify-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+    .email-modal-status { min-height: 22px; margin-top: 12px; font-size: 12px; font-weight: 800; }
+    .email-modal-status.ok { color: #047857; }
+    .email-modal-status.error { color: var(--clay-error); }
+    .email-modal-status.neutral { color: var(--clay-muted); }
+    @media (max-width: 620px) {
+      .email-choice-grid { flex-wrap: wrap; }
+      .email-choice { flex: 1 1 auto; justify-content: center; }
+      .email-modal-card { padding: 22px; border-radius: 24px; }
+    }
 
     /* Product selector */
     .product-search-wrap { position: relative; margin-bottom: 18px; }
@@ -1069,6 +1154,45 @@ Before submitting your request, kindly ensure that you have carefully reviewed a
     </div>
   </div>
 
+  <!-- Email Verification Modal -->
+  <div class="email-modal" id="emailModal" role="dialog" aria-modal="true" aria-labelledby="emailModalTitle" onclick="handleEmailModalBackdrop(event)">
+    <div class="email-modal-card">
+      <button type="button" class="email-modal-close" onclick="closeEmailModal()" aria-label="Close">×</button>
+
+      <div class="email-modal-icon" id="emailModalIcon">
+        <span id="emailModalGoogleIcon" class="google-mini-logo" style="font-size:30px;width:auto;height:auto;">G</span>
+        <img id="emailModalFlexwayIcon" src="fx.png" alt="Flexway" style="display:none;width:34px;height:34px;object-fit:contain;">
+      </div>
+      <h2 class="email-modal-title" id="emailModalTitle">Sign in with Google</h2>
+      <p class="email-modal-subtitle" id="emailModalSubtitle">Use your Google account to verify the email for this request.</p>
+
+      <div class="email-modal-body" id="googleModalBody">
+        <div id="g_id_onload"
+             data-client_id="1053548294778-ik9od282c0mi2f7flc4evj7b2l6ll04m.apps.googleusercontent.com"
+             data-callback="handleGoogleCredentialResponse"
+             data-auto_prompt="false">
+        </div>
+        <div class="google-auth-row">
+          <div class="g_id_signin"
+               data-type="standard"
+               data-size="large"
+               data-theme="outline"
+               data-text="signin_with"
+               data-shape="pill"
+               data-logo_alignment="left">
+          </div>
+          <span class="verified-pill" id="googleVerifiedPill">✓ Google account verified</span>
+        </div>
+      </div>
+
+      <div class="email-modal-body" id="flexwayModalBody" style="display:none;">
+        <input type="email" id="flexwayEmailField" class="flexway-modal-input" placeholder="name@flexway.com" autocomplete="email">
+        <button type="button" class="flexway-verify-btn" id="flexwayVerifyBtn" onclick="verifyFlexwayFromModal()">Verify Flexway Email</button>
+        <div class="email-modal-status neutral" id="flexwayModalStatus">Your email will be checked against the Flexway tab in Google Sheets.</div>
+      </div>
+    </div>
+  </div>
+
   <!-- Main Page -->
   <div class="page">
     <div id="formWrap">
@@ -1086,37 +1210,12 @@ Before submitting your request, kindly ensure that you have carefully reviewed a
                 <div class="email-choice-head"><span class="google-mini-logo">G</span> Sign in with Google</div>
               </div>
               <div class="email-choice" id="flexwayChoice" onclick="selectEmailMethod('flexway')" role="button" tabindex="0" aria-label="Sign in with Flexway">
-                <div class="email-choice-head"><img class="provider-logo" id="flexwayLogo" alt="Flexway"> Sign in with Flexway</div>
+                <div class="email-choice-head"><img class="provider-logo" id="flexwayLogo" src="fx.png" alt="Flexway"> Sign in with Flexway</div>
               </div>
-            </div>
-
-            <div class="email-auth-panel" id="googlePanel">
-              <div id="g_id_onload"
-                   data-client_id="1053548294778-ik9od282c0mi2f7flc4evj7b2l6ll04m.apps.googleusercontent.com"
-                   data-callback="handleGoogleCredentialResponse"
-                   data-auto_prompt="false">
-              </div>
-              <div class="google-auth-row">
-                <div class="g_id_signin"
-                     data-type="standard"
-                     data-size="large"
-                     data-theme="outline"
-                     data-text="signin_with"
-                     data-shape="pill"
-                     data-logo_alignment="left">
-                </div>
-                <span class="verified-pill" id="googleVerifiedPill">✓ Google account verified</span>
-              </div>
-              <div class="email-help-text">The signed-in Google email will be used for this request.</div>
-            </div>
-
-            <div class="email-auth-panel" id="flexwayPanel">
-              <input type="email" id="flexwayEmailField" placeholder="name@flexway.com" autocomplete="email">
-              <div class="email-help-text">Only emails ending with <strong>@flexway.com</strong> are accepted here.</div>
             </div>
 
             <input type="hidden" id="emailField">
-            <div class="email-status neutral" id="emailStatus">Choose Google login or enter a Flexway email before submitting.</div>
+            <div class="email-status neutral" id="emailStatus">Choose Google or Flexway verification before submitting.</div>
           </div>
         </div>
 
@@ -1280,7 +1379,7 @@ s0.parentNode.insertBefore(s1,s0);
 
   window.addEventListener('DOMContentLoaded', () => {
     const flexwayLogo = document.getElementById('flexwayLogo');
-    if (flexwayLogo) flexwayLogo.src = FLEXWAY_LOGO_DATA;
+    if (flexwayLogo) flexwayLogo.src = 'fx.png';
     initEmailVerification();
     loadBranches();
     loadProducts();
@@ -1299,7 +1398,12 @@ s0.parentNode.insertBefore(s1,s0);
     const flexwayField = document.getElementById('flexwayEmailField');
     if (flexwayField) {
       flexwayField.addEventListener('input', validateFlexwayEmailLive);
-      flexwayField.addEventListener('blur', () => verifyFlexwayEmailWithServer(true));
+      flexwayField.addEventListener('keydown', event => {
+        if (event.key === 'Enter') {
+          event.preventDefault();
+          verifyFlexwayFromModal();
+        }
+      });
     }
 
     ['googleChoice', 'flexwayChoice'].forEach(id => {
@@ -1318,20 +1422,92 @@ s0.parentNode.insertBefore(s1,s0);
     selectedEmailMethod = method;
     document.getElementById('googleChoice').classList.toggle('active', method === 'google');
     document.getElementById('flexwayChoice').classList.toggle('active', method === 'flexway');
-    document.getElementById('googlePanel').classList.toggle('active', method === 'google');
-    document.getElementById('flexwayPanel').classList.toggle('active', method === 'flexway');
 
     verifiedEmail = '';
     verifiedEmailMethod = '';
     document.getElementById('emailField').value = '';
     document.getElementById('googleVerifiedPill').classList.remove('show');
 
+    openEmailModal(method);
+  }
+
+  function openEmailModal(method) {
+    const modal = document.getElementById('emailModal');
+    const googleBody = document.getElementById('googleModalBody');
+    const flexBody = document.getElementById('flexwayModalBody');
+    const title = document.getElementById('emailModalTitle');
+    const subtitle = document.getElementById('emailModalSubtitle');
+    const googleIcon = document.getElementById('emailModalGoogleIcon');
+    const flexIcon = document.getElementById('emailModalFlexwayIcon');
+
+    googleBody.style.display = method === 'google' ? 'block' : 'none';
+    flexBody.style.display = method === 'flexway' ? 'block' : 'none';
+    googleIcon.style.display = method === 'google' ? 'inline-grid' : 'none';
+    flexIcon.style.display = method === 'flexway' ? 'block' : 'none';
+
     if (method === 'google') {
+      title.textContent = 'Sign in with Google';
+      subtitle.textContent = 'Use your Google account to verify the email for this request.';
       setEmailStatus('neutral', 'Please sign in with Google to verify your email.');
     } else {
-      setEmailStatus('neutral', 'Enter your Flexway email. It will be checked against the Flexway tab.');
-      setTimeout(() => document.getElementById('flexwayEmailField').focus(), 50);
+      title.textContent = 'Sign in with Flexway';
+      subtitle.textContent = 'Enter your Flexway email. We will verify it against the Flexway tab in Google Sheets.';
+      setEmailStatus('neutral', 'Enter your Flexway email to verify.');
     }
+
+    modal.classList.add('show');
+    document.body.style.overflow = 'hidden';
+    setTimeout(() => {
+      if (method === 'flexway') {
+        const field = document.getElementById('flexwayEmailField');
+        if (field) field.focus();
+      }
+    }, 80);
+  }
+
+  function closeEmailModal() {
+    const modal = document.getElementById('emailModal');
+    modal.classList.remove('show');
+    document.body.style.overflow = '';
+  }
+
+  function handleEmailModalBackdrop(event) {
+    if (event.target === event.currentTarget) closeEmailModal();
+  }
+
+  function verifyFlexwayFromModal() {
+    const btn = document.getElementById('flexwayVerifyBtn');
+    const status = document.getElementById('flexwayModalStatus');
+    const field = document.getElementById('flexwayEmailField');
+    const email = String(field.value || '').trim().toLowerCase();
+
+    if (!/^[a-z0-9._%+-]+@flexway\.com$/i.test(email)) {
+      status.className = 'email-modal-status error';
+      status.textContent = 'Please enter a valid @flexway.com email.';
+      return;
+    }
+
+    btn.disabled = true;
+    btn.textContent = 'Verifying…';
+    status.className = 'email-modal-status neutral';
+    status.textContent = 'Checking your email…';
+
+    verifyFlexwayEmailWithServer(true).then(ok => {
+      if (ok) {
+        status.className = 'email-modal-status ok';
+        status.textContent = '✓ Flexway email verified.';
+        setTimeout(closeEmailModal, 500);
+      } else {
+        status.className = 'email-modal-status error';
+        status.textContent = document.getElementById('emailStatus').textContent || 'Email not registered.';
+      }
+    }).catch(() => {
+      status.className = 'email-modal-status error';
+      status.textContent = 'Could not verify the Flexway email. Please try again.';
+    }).finally(() => {
+      btn.disabled = false;
+      btn.textContent = 'Verify Flexway Email';
+    });
   }
 
   function handleGoogleCredentialResponse(response) {
@@ -1356,6 +1532,7 @@ s0.parentNode.insertBefore(s1,s0);
       document.getElementById('googleVerifiedPill').textContent = '✓ ' + email;
       document.getElementById('googleVerifiedPill').classList.add('show');
       setEmailStatus('ok', 'Google account verified: ' + email);
+      setTimeout(closeEmailModal, 500);
     } catch (err) {
       clearVerifiedEmail('Google sign-in failed. Please try again.');
     }
@@ -1872,8 +2049,7 @@ s0.parentNode.insertBefore(s1,s0);
     document.getElementById('flexwayEmailField').value = '';
     document.getElementById('googleChoice').classList.remove('active');
     document.getElementById('flexwayChoice').classList.remove('active');
-    document.getElementById('googlePanel').classList.remove('active');
-    document.getElementById('flexwayPanel').classList.remove('active');
+    closeEmailModal();
     document.getElementById('googleVerifiedPill').classList.remove('show');
     setEmailStatus('neutral', 'Choose Google or Flexway verification before submitting.');
     document.getElementById('dateField').valueAsDate = new Date();
